@@ -1,0 +1,65 @@
+package io.xpelliars.spring_rest.service;
+
+import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import io.xpelliars.spring_rest.entity.Employee;
+import io.xpelliars.spring_rest.exception.EmployeeAlreadyExistException;
+import io.xpelliars.spring_rest.exception.EmployeeNotFoundException;
+import io.xpelliars.spring_rest.repository.EmployeeRepository;
+
+@Service
+public class EmployeeServiceImp implements EmployeeService {
+	
+	@Autowired
+	EmployeeRepository repository;
+	
+	@Override
+	public List<Employee> findAll() {
+		return repository.findAll();
+	}
+
+	@Override
+	public Employee findOne(String id) {
+		Employee existing = repository.findOne(id);
+		if(existing == null) {
+			throw new EmployeeNotFoundException(" Employee with id:" +id + "not found");
+		}
+		return existing;
+	}
+
+	@Override
+	@Transactional
+	public Employee create(Employee emp) {
+		Employee existing = repository.findByEmail(emp.getEmail());
+		if(existing != null) {
+			throw new EmployeeAlreadyExistException("Email already in use: " + emp.getEmail());
+		}
+		return repository.create(emp);
+	}
+
+	@Override	
+	@Transactional
+	public Employee update(String id, Employee emp) {
+		Employee existing = repository.findOne(id);
+		if(existing == null) {
+			throw new EmployeeNotFoundException(" Employee with id:" +id + "not found");
+		}
+		return repository.update(emp);
+	}
+
+	@Override
+	@Transactional
+	public void delete(String id) {
+		Employee existing = repository.findOne(id);
+		if(existing == null) {
+			throw new EmployeeNotFoundException(" Employee with id:" +id + "not found");
+		}
+		 repository.delete(existing);
+	}
+
+}
